@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 
-namespace Quizy_API.Authentication
+namespace Quizy_API.Models
 {
     public class ApplicationUser : IdentityUser
     {

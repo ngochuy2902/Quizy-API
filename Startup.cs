@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using Quizy_API.Authentication;
+using Quizy_API.Models;
 using Quizy_API.Data;
 
 namespace Quizy_API
