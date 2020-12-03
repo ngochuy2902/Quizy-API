@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Quizy_API.Authentication;
 using Quizy_API.Data;
 using Quizy_API.Models;
 
 namespace Quizy_API.Controllers
 {
+    [Authorize(Roles = UserRoles.Admin)]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
@@ -42,12 +45,17 @@ namespace Quizy_API.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> PostCategory(Category category)
         {
+            var c = _context.Categories.Where(p=>p.Name == category.Name);
+            if (c != null)
+            {
+                return BadRequest();
+            }
             category.CreatedAt = DateTime.Now;
             category.UpdatedAt = DateTime.Now;
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Get Category", new {id = category.Id}, category);
+            return CreatedAtAction(nameof(GetCategory), new {id = category.Id}, category);
         }
 
         [HttpPut("{id}")]
