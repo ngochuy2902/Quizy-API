@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 namespace Quizy_API.Models
 {
-    public class Rank
+    public class Rank : TrackableEntity
     {
         public int Id { get; set; }
         
@@ -10,8 +10,5 @@ namespace Quizy_API.Models
         public Test Test { get; set; }
         public ICollection<Result> Results {get; set; }
         public ICollection<Comment> Comments {get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public DateTime? DeletedAt { get; set; }
     } 
 }

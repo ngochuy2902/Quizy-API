@@ -12,6 +12,5 @@ namespace Quizy_API.ModelsView
         public int QuestionType {get; set; }
         
         public ICollection<OptionMV> Options { get; set; }
-        public int TestId { get; set; }
     }
 }

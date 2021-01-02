@@ -18,6 +18,7 @@ namespace Quizy_API.Service.Impl
         {
             _context = context;
         }
+        
         public async Task<bool> DeleteCategories(int id)
         {
             var category = await GetCategory(id);

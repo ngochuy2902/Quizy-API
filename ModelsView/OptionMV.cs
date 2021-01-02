@@ -9,6 +9,5 @@ namespace Quizy_API.ModelsView
     {
         public string Answer { get; set; }
         public bool IsTrue { get; set; }
-        public int QuestionId {get; set; }
     }
 }

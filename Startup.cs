@@ -19,6 +19,7 @@ using Quizy_API.Models;
 using Quizy_API.Data;
 using Quizy_API.Service;
 using Quizy_API.Service.Impl;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Quizy_API
 {
@@ -34,9 +35,15 @@ namespace Quizy_API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
-            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddDbContext<ApplicationDbContext>(options => 
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            services.AddIdentity<ApplicationUser, IdentityRole>( options => 
+            {
+                options.ClaimsIdentity.UserIdClaimType = JwtRegisteredClaimNames.Sub;
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
             services.AddAuthentication(options =>
@@ -58,7 +65,10 @@ namespace Quizy_API
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                     };
                 });
+            services.AddControllers().AddNewtonsoftJson();
+
             services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<ITestService, TestService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

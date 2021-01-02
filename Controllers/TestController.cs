@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Quizy_API.Data;
 using Quizy_API.Models;
+using Quizy_API.ModelsView;
+using Quizy_API.Service;
 
 namespace Quizy_API.Controllers
 {
@@ -14,84 +16,59 @@ namespace Quizy_API.Controllers
     public class TestController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public TestController(ApplicationDbContext context)
+        private readonly ITestService _testService;
+
+        public TestController(ApplicationDbContext context, ITestService testService)
         {
             _context = context;
+            _testService = testService;
         }
         
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Test>>> GetTests()
+        public async Task<ActionResult> GetTests()
         {
-            return await _context.Tests.ToListAsync();
+            return Ok(await _testService.GetTests());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Test>> GetTest(int id)
         {
-            var Test = await _context.Tests.FindAsync(id);
-            if (Test == null)
+            var test = await _testService.GetTest(id);
+            if (test == null)
             {
                 return NotFound();
             }
-            return Test;
+            return Ok(test);
         }
 
         [HttpPost]
-        public async Task<ActionResult<Test>> PostTest(Test Test)
+        public async Task<ActionResult> PostTest(TestMV testMV)
         {
-            _context.Tests.Add(Test);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("Get Test", new {id = Test.Id}, Test);
+            var test = await _testService.PostTest(testMV);
+            return StatusCode(201, test);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Test>> PutTest(int id, Test Test)
+        public async Task<ActionResult> PutTest(int id, TestMV testMV)
         {
-            if (id != Test.Id)
+            var test = await _testService.PutTest(id, testMV);
+            if (test == null)
             {
                 return BadRequest();
-            }
-            _context.Entry(Test).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TestExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(Test);
+            }            
+            return Ok(test);
 
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Test>> DeleteTest(int id)
+        public async Task<ActionResult> DeleteTest(int id)
         {
-            var Test = await _context.Tests.FindAsync(id);
-            if (Test == null)
+            var isDeleted = await _testService.DeleteTest(id);
+            if (isDeleted == false)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            Test.DeletedAt = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return Test;
-        }
-
-        private bool TestExists(int id)
-        {
-            return _context.Tests.Any(e => e.Id == id);
+            return Ok();
         }
     }
 }
