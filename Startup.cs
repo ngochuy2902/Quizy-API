@@ -17,6 +17,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Quizy_API.Models;
 using Quizy_API.Data;
+using Quizy_API.Service;
+using Quizy_API.Service.Impl;
 
 namespace Quizy_API
 {
@@ -56,6 +58,7 @@ namespace Quizy_API
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
                     };
                 });
+            services.AddScoped<ICategoryService, CategoryService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

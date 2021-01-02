@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Quizy_API.Authentication;
 using Quizy_API.Data;
 using Quizy_API.Models;
+using Quizy_API.ModelsView;
+using Quizy_API.Service;
 
 namespace Quizy_API.Controllers
 {
@@ -17,101 +19,57 @@ namespace Quizy_API.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public CategoryController(ApplicationDbContext context)
+        private readonly ICategoryService _categoryService;
+
+        public CategoryController(ApplicationDbContext context, ICategoryService categoryService)
         {
             _context = context;
+            _categoryService = categoryService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
+        public async Task<ActionResult> GetCategories()
         {
-            return await _context.Categories.Where(p => p.DeletedAt == null).ToListAsync();
+            return Ok(await _categoryService.GetCategories());
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Category>> GetCategory(int id)
         {
-            if (!CategoryExists(id)) {
-                return NotFound();
-            }
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-            {
-                return NotFound();
-            }
-            return category;
+            return Ok(await _categoryService.GetCategory(id));
         }
 
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        public async Task<ActionResult> PostCategory(CategoryMV categoryMV)
         {
-            var c = _context.Categories.Where(p=>p.Name == category.Name);
-            if (c != null)
+            var category = await _categoryService.PostCategory(categoryMV);
+            if (category == null)
             {
                 return BadRequest();
             }
-            category.CreatedAt = DateTime.Now;
-            category.UpdatedAt = DateTime.Now;
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetCategory), new {id = category.Id}, category);
+            return StatusCode(201, category);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Category>> PutCategory(int id, Category category)
+        public async Task<ActionResult> PutCategory(int id, CategoryMV categoryMV)
         {
-            if (id != category.Id)
+            var category = await _categoryService.PutCategories(id, categoryMV);
+            if (category == null)
             {
                 return BadRequest();
             }
-            if (!CategoryExists(id)) {
-                return NotFound();
-            }
-            var oldCategory = await _context.Categories.FindAsync(id);
-            oldCategory.Name = category.Name;
-            oldCategory.UpdatedAt = DateTime.Now;
-            
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CategoryExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(oldCategory);
-
+            return Ok(category);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<Category>> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null)
+            var isDeleted = await _categoryService.DeleteCategories(id);
+            if (isDeleted == false)
             {
-                return NotFound();
+                return BadRequest();
             }
-
-            category.DeletedAt = DateTime.Now;
-            await _context.SaveChangesAsync();
-
-            return category;
-        }
-
-        private bool CategoryExists(int id)
-        {
-            var category = _context.Categories.Find(id);
-            if (category.DeletedAt != null) return false;
-            return _context.Categories.Any(e => e.Id == id);
+            return Ok();
         }
     }
 }
